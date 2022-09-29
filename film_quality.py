@@ -11,6 +11,7 @@ from skimage.io import imread, imsave
 from skimage.util import img_as_ubyte
 from skimage.filters import gaussian
 from matplotlib import pyplot as plt
+import numpy as np
 
 
 def main():
@@ -25,13 +26,16 @@ def main():
 
     """
 
-    # Must be [0, 1]. Increase value to only caputure brighter pixels.
-    THRESHOLD = 0.6
+    # Must be [0, 1]. Brightness values BELOW threshold are part of film.
+    FILM_THRESHOLD = 0.6
+
+    # Must be [0, 1]. Brightness values BELOW threshold are high-quality film.
+    QUALITY_THRESHOLD = 0.27
 
     print("Started film quality analysis.")
     img_list = import_film_images()
     create_output_directory()
-    film_image_analysis(img_list, THRESHOLD)
+    film_image_analysis(img_list, FILM_THRESHOLD, QUALITY_THRESHOLD)
     print("Completed film quality analysis.")
 
 
@@ -82,14 +86,15 @@ def create_output_directory() -> None:
         p.mkdir(parents=True, exist_ok=True)
 
 
-def film_image_analysis(img_list, threshold) -> None:
+def film_image_analysis(img_list, film_threshold, quality_threshold) -> None:
     """
     Analyze each film image. Creates grayscale image, thresholded image, and pixel
     brightness histograms.
 
     Parameters:
         img_list (list of Paths): list of JPG image filepaths
-        threshold (float): value 0 (black) to 1 (white) to threshold image
+        film_threshold (float): value 0 (black) to 1 (white) to threshold film
+        quality_threshold (float): value 0 (black) to 1 (white) to threshold quality
 
     Returns:
         None
@@ -113,15 +118,34 @@ def film_image_analysis(img_list, threshold) -> None:
         gray_imgs.append(img_gray)
         imsave(p / (title + "_grayscale.png"), img_as_ubyte(img_gray))
 
-        # Create thresholded binary image
-        fig = plt.figure()
-        binary = img_gray > threshold
-        imsave(p / (title + "_theshold.png"), img_as_ubyte(binary))
+        # Threshold to capture all film pixels
+        film_binary = img_gray < film_threshold
+        film_px = np.sum(film_binary)
+
+        # Threshold to capture high-quality film pixels
+        high_quality_binary = img_gray < quality_threshold
+        high_quality_px = np.sum(high_quality_binary)
+
+        # Combine thresholds to capture low-quality film pixels
+        low_quality_binary = film_binary == np.invert(high_quality_binary)
+        low_quality_px = np.sum(low_quality_binary)
+
+        # Create threshold array (black = high-quality film, red = low-quality)
+        x = img_gray.shape[0]
+        y = img_gray.shape[1]
+        thresholded = np.ones((x, y, 3), dtype=np.uint8) * 255
+        thresholded[film_binary] = [0, 0, 0]
+        thresholded[low_quality_binary] = [255, 0, 0]
+        imsave(p / (title + "_theshold.png"), thresholded)
+
+        # Print quality metric
+        quality = round(high_quality_px / film_px * 100, 1)
+        print("Film Quality Metric: " + str(quality) + "%")
 
         # Create brightness histogram
         fig = plt.figure()
         plt.hist(x=img_gray.ravel(), bins=256, range=[0, 1], density=True, alpha=0.5)
-        plt.axvline(threshold, color="k", linestyle="dashed", linewidth=1)
+        plt.axvline(film_threshold, color="k", linestyle="dashed", linewidth=1)
         plt.title("Normalized Frequency vs Brightness")
         plt.xlabel("Brightness")
         plt.ylabel("Normalized Frequency")
