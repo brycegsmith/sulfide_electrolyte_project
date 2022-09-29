@@ -26,7 +26,7 @@ def main():
     """
 
     # Must be [0, 1]. Increase value to only caputure brighter pixels.
-    THRESHOLD = 0.95
+    THRESHOLD = 0.6
 
     print("Started film quality analysis.")
     img_list = import_film_images()
@@ -116,12 +116,12 @@ def film_image_analysis(img_list, threshold) -> None:
         # Create thresholded binary image
         fig = plt.figure()
         binary = img_gray > threshold
-        # imshow(binary, cmap=plt.cm.gray)
         imsave(p / (title + "_theshold.png"), img_as_ubyte(binary))
 
         # Create brightness histogram
         fig = plt.figure()
         plt.hist(x=img_gray.ravel(), bins=256, range=[0, 1], density=True, alpha=0.5)
+        plt.axvline(threshold, color="k", linestyle="dashed", linewidth=1)
         plt.title("Normalized Frequency vs Brightness")
         plt.xlabel("Brightness")
         plt.ylabel("Normalized Frequency")
