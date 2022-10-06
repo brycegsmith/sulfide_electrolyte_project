@@ -7,10 +7,12 @@ Created on 08/01/2022
 """
 
 from pathlib import Path
-from skimage.io import imread, imsave
+from skimage.io import imread, imsave, imshow
 from skimage.util import img_as_ubyte
 from skimage.filters import gaussian
+from skimage.morphology import opening
 from matplotlib import pyplot as plt
+from matplotlib import lines
 import numpy as np
 
 
@@ -27,10 +29,10 @@ def main():
     """
 
     # Must be [0, 1]. Brightness values BELOW threshold are part of film.
-    FILM_THRESHOLD = 0.6
+    FILM_THRESHOLD = 0.65
 
     # Must be [0, 1]. Brightness values BELOW threshold are high-quality film.
-    QUALITY_THRESHOLD = 0.27
+    QUALITY_THRESHOLD = 0.14
 
     print("Started film quality analysis.")
     img_list = import_film_images()
@@ -112,14 +114,17 @@ def film_image_analysis(img_list, film_threshold, quality_threshold) -> None:
         titles.append(title)
 
         # Create grayscale image [0 = black, 1 = white]. Save as uint8 [0, 255].
-        # Apply gaussian filter to de-noise histogram
+        # Apply gaussian filter to remnove low-dimensional image noise
         img_gray = imread(img, as_gray=True)
         img_gray = gaussian(img_gray, sigma=3)
         gray_imgs.append(img_gray)
         imsave(p / (title + "_grayscale.png"), img_as_ubyte(img_gray))
 
         # Threshold to capture all film pixels
+        # Morphological opening to remove small dots
         film_binary = img_gray < film_threshold
+        element = np.ones([10, 10])
+        film_binary = opening(film_binary, element)
         film_px = np.sum(film_binary)
 
         # Threshold to capture high-quality film pixels
@@ -146,6 +151,22 @@ def film_image_analysis(img_list, film_threshold, quality_threshold) -> None:
         fig = plt.figure()
         plt.hist(x=img_gray.ravel(), bins=256, range=[0, 1], density=True, alpha=0.5)
         plt.axvline(film_threshold, color="k", linestyle="dashed", linewidth=1)
+        plt.axvline(quality_threshold, color="r", linestyle="dashed", linewidth=1)
+        quality_legend = lines.Line2D(
+            [],
+            [],
+            color="r",
+            linestyle="--",
+            label="Quality Threshold",
+        )
+        film_legend = lines.Line2D(
+            [],
+            [],
+            color="k",
+            linestyle="--",
+            label="Film Threshold",
+        )
+        plt.legend(handles=[quality_legend, film_legend])
         plt.title("Normalized Frequency vs Brightness")
         plt.xlabel("Brightness")
         plt.ylabel("Normalized Frequency")
@@ -160,7 +181,8 @@ def film_image_analysis(img_list, film_threshold, quality_threshold) -> None:
     for img in gray_imgs:
         plt.hist(x=img.ravel(), bins=256, range=[0, 1], density=True, alpha=0.5)
         plt.legend(titles)
-
+    plt.axvline(film_threshold, color="k", linestyle="dashed", linewidth=1)
+    plt.axvline(quality_threshold, color="r", linestyle="dashed", linewidth=1)
     plt.title("Normalized Frequency vs Brightness")
     plt.xlabel("Brightness")
     plt.ylabel("Normalized Frequency")
