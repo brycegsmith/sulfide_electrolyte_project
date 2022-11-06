@@ -1,9 +1,9 @@
 """
 Analyze the quality of a sulfide film using lightbox technique.
 
-Created on 08/01/2022
+Created on 10/01/2022
 
-@author: Bryce Smith (brycegsmith@hotmail.com)
+@author: Bryce Smith
 """
 
 from pathlib import Path
@@ -28,11 +28,20 @@ def main():
 
     """
 
+    # BRYCE PARAMETERS
+    # FILM_THRESHOLD = 0.65
+    # QUALITY_THRESHOLD = 0.14
+
+    # DAVID PARAMETERS
+    print("David")
+    FILM_THRESHOLD = 0.71
+    QUALITY_THRESHOLD = 0.28
+
     # Must be [0, 1]. Brightness values BELOW threshold are part of film.
-    FILM_THRESHOLD = 0.65
+    # FILM_THRESHOLD = 0.71
 
     # Must be [0, 1]. Brightness values BELOW threshold are high-quality film.
-    QUALITY_THRESHOLD = 0.14
+    # QUALITY_THRESHOLD = 0.26
 
     print("Started film quality analysis.")
     img_list = import_film_images()
@@ -59,10 +68,10 @@ def import_film_images() -> list:
         msg = "Did not find film_images directory. Upload images to created directory."
         print(msg)
 
-    # Iterate through jpg files in directory
+    # Iterate through jpg files in directory (supports .jpg or .jpeg endings)
     i = 0
     img_list = []
-    for f in p.glob("*.jpg"):
+    for f in p.glob("*.jp*g"):
         i += 1
         img_list.append(f)
     msg = "Found " + str(i) + " jpg image(s) in directory. Stop execution if incorrect."
@@ -149,7 +158,15 @@ def film_image_analysis(img_list, film_threshold, quality_threshold) -> None:
 
         # Create brightness histogram
         fig = plt.figure()
-        plt.hist(x=img_gray.ravel(), bins=256, range=[0, 1], density=True, alpha=0.5)
+        bin_count = 256
+        hist_range = [0, 1]
+        hist_output = plt.hist(
+            x=img_gray.ravel(),
+            bins=bin_count,
+            range=hist_range,
+            density=True,
+            alpha=0.5,
+        )
         plt.axvline(film_threshold, color="k", linestyle="dashed", linewidth=1)
         plt.axvline(quality_threshold, color="r", linestyle="dashed", linewidth=1)
         quality_legend = lines.Line2D(
