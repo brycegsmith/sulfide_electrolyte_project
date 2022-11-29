@@ -28,20 +28,17 @@ def main():
 
     """
 
-    # BRYCE PARAMETERS
-    # FILM_THRESHOLD = 0.65
-    # QUALITY_THRESHOLD = 0.14
-
-    # DAVID PARAMETERS
-    print("David")
-    FILM_THRESHOLD = 0.71
-    QUALITY_THRESHOLD = 0.28
+    # THRESHOLDS ARE DEPENDENT ON CAMERA. CHANGE BASED ON CALIBRATION FOR USER.
 
     # Must be [0, 1]. Brightness values BELOW threshold are part of film.
-    # FILM_THRESHOLD = 0.71
+    FILM_THRESHOLD_BRYCE = 0.65
+    FILM_THRESHOLD_DAVID = 0.71
+    FILM_THRESHOLD = FILM_THRESHOLD_BRYCE
 
     # Must be [0, 1]. Brightness values BELOW threshold are high-quality film.
-    # QUALITY_THRESHOLD = 0.26
+    QUALITY_THRESHOLD_BRYCE = 0.14
+    QUALITY_THRESHOLD_DAVID = 0.28
+    QUALITY_THRESHOLD = QUALITY_THRESHOLD_BRYCE
 
     print("Started film quality analysis.")
     img_list = import_film_images()
