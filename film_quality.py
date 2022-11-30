@@ -1,5 +1,5 @@
 """
-Analyze the quality of a sulfide film using lightbox technique.
+Analyze the quality of a sulfide film using lightboard technique.
 
 Created on 10/01/2022
 
