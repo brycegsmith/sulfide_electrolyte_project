@@ -49,10 +49,10 @@ def main():
     """
     nyquist_plot_group(
         files,
-        contains_list=["P4T10"],
+        contains_list=["D011"],
         mode="any",
         suppress_legend=False,
-        group_title="Nyquist Plot: P4T10",
+        group_title="Nyquist Plot: D011",
     )
     """
 
@@ -513,7 +513,7 @@ def create_boxplot(datapath, x_var, filter_dict, hue_var=None) -> None:
     plt.yscale("log")
     plt.ylim(0.00001, 0.001)  # Y-Axis Limits (MAY NEED TO EDIT)
     plt.ylabel("Ionic Conductivity (S/cm)")
-    plt.savefig(p / "boxplot.png")
+    plt.savefig(p / "boxplot.png", bbox_inches="tight")
 
 
 def create_sample_boxplot(datapath, hue_var=None) -> None:
@@ -559,7 +559,7 @@ def create_sample_boxplot(datapath, hue_var=None) -> None:
     plt.xticks(rotation=45)
     plt.xlabel("Sample ID")
     plt.ylabel("Ionic Conductivity (S/cm)")
-    plt.savefig(p / "sample_boxplot.png")
+    plt.savefig(p / "sample_boxplot.png", bbox_inches="tight")
 
 
 if __name__ == "__main__":
